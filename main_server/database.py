@@ -9,8 +9,10 @@ import config
 
 def get_connection():
     """Get database connection"""
+    # Ensure parent directory exists before connecting
+    config.DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(config.DATABASE_PATH)
-    conn.row_factory = sqlite3.Row  # Access columns by name
+    conn.row_factory = sqlite3.Row
     return conn
 
 
