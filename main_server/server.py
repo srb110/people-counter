@@ -106,6 +106,88 @@ async def get_statistics(x_api_key: str = Header(None)):
     return db.get_stats()
 
 
+@app.get("/export/csv")
+async def export_csv(
+    from_date: str = None,
+    to_date: str = None,
+    x_api_key: str = Header(None)
+):
+    """
+    Export all processed results as CSV file.
+    For use by ML team to train models on synchronized data.
+    
+    Optional query parameters:
+    - from_date: ISO format like 2026-05-11T00:00:00
+    - to_date: ISO format like 2026-05-12T00:00:00
+    """
+    from fastapi.responses import StreamingResponse
+    import csv
+    import io
+    
+    verify_api_key(x_api_key)
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    # Build query with optional date filtering
+    query = """
+        SELECT captured_at, people_count, filename, model_used, 
+               processing_time_ms
+        FROM images
+        WHERE status = 'processed'
+    """
+    params = []
+    
+    if from_date:
+        query += " AND captured_at >= ?"
+        params.append(from_date)
+    if to_date:
+        query += " AND captured_at <= ?"
+        params.append(to_date)
+    
+    query += " ORDER BY captured_at"
+    
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header row - what ML team needs
+    writer.writerow([
+        "timestamp",
+        "people_count",
+        "filename",
+        "model_used",
+        "processing_time_ms"
+    ])
+    
+    # Data rows
+    for row in rows:
+        writer.writerow([
+            row['captured_at'],
+            row['people_count'],
+            row['filename'],
+            row['model_used'],
+            row['processing_time_ms']
+        ])
+    
+    output.seek(0)
+    
+    # Return as downloadable file
+    filename = f"people_counts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+
 @app.get("/results")
 async def get_results(
     limit: int = 20,
