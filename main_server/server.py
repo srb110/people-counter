@@ -10,6 +10,8 @@ import shutil
 import config
 import database as db
 from batch_processor import run_batch
+from scheduler import create_scheduler
+from contextlib import asynccontextmanager
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,7 +25,19 @@ db.init_database()
 config.PENDING_DIR.mkdir(parents=True, exist_ok=True)
 config.PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title="Main Server - Image Receiver")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup — start scheduler
+    from batch_processor import run_batch
+    scheduler = create_scheduler(run_batch)
+    scheduler.start()
+    log.info("Scheduler started")
+    yield
+    # Shutdown — stop scheduler
+    scheduler.shutdown()
+    log.info("Scheduler stopped")
+
+app = FastAPI(title="Main Server - Image Receiver", lifespan=lifespan)
 
 
 def verify_api_key(x_api_key: str = Header(None)):
