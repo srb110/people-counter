@@ -23,5 +23,5 @@ GPU_SERVER_URL = os.getenv("GPU_SERVER_URL", "http://localhost:8001")
 GPU_SERVER_API_KEY = os.getenv("GPU_SERVER_API_KEY", "gpu-server-secret-key-change-me")
 
 # Batch processing
-BATCH_SIZE = 10
+BATCH_SIZE = 1
 GPU_REQUEST_TIMEOUT = 30
