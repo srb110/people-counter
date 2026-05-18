@@ -31,11 +31,11 @@ async def lifespan(app: FastAPI):
     from batch_processor import run_batch
     scheduler = create_scheduler(run_batch)
     scheduler.start()
-    log.info("Scheduler started")
+    logging.info("Scheduler started")
     yield
     # Shutdown — stop scheduler
     scheduler.shutdown()
-    log.info("Scheduler stopped")
+    logging.info("Scheduler stopped")
 
 app = FastAPI(title="Main Server - Image Receiver", lifespan=lifespan)
 
