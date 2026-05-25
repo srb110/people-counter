@@ -61,7 +61,7 @@ def process_single_image(image_record):
         )
         
         logging.info(
-            f"✅ {filename} → {result['people_count']} people "
+            f" {filename} → {result['people_count']} people "
             f"({result['processing_time_ms']}ms)"
         )
         return True
