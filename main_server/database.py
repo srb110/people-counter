@@ -43,7 +43,7 @@ def init_database():
     
     conn.commit()
     conn.close()
-    print(f"✅ Database initialized at: {config.DATABASE_PATH}")
+    print(f"Database initialized at: {config.DATABASE_PATH}")
 
 
 def insert_image(filename, captured_at, file_path):
