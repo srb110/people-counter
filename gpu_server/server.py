@@ -21,7 +21,7 @@ app = FastAPI(title="GPU Inference Server")
 # Load models at startup (only once)
 logging.info("Loading YOLO11n model...")
 yolo_model = YOLO("yolo11n.pt")
-logging.info("✅ YOLO11n loaded")
+logging.info(" YOLO11n loaded")
 
 # Class 0 in COCO is "person"
 PERSON_CLASS_ID = 0
